@@ -18,7 +18,7 @@ class YoutubeMusicDesktopExtension extends Extension {
 		this.dialog=props.dialog;
 		this.setValue=props.setValue;
 		this.name = 'Youtube Music Desktop App';
-		this.platforms = [PLATFORMS.WINDOWS, PLATFORMS.MAC];
+		this.platforms = [PLATFORMS.windows, PLATFORMS.mac, PLATFORMS.linux];
 		this.code = ""
 		this.url = "http://localhost:9863"
 		this.inputs = [

@@ -10,7 +10,8 @@
     "author": "GSimken",
     "license": "MIT",
     "dependencies": {
-        "deckboard-kit": "https://github.com/rivafarabi/deckboard-kit.git",
+        "deckboard-kit": "github:rivafarabi/deckboard-kit",
+        "deckboard-kit-cli": "^1.1.3",
         "node-fetch": "^2.6.1"
     }
 }
