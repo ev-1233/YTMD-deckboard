@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Evan McKeown
+// SPDX-License-Identifier: Apache-2.0
+
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { YoutubeMusicDesktopExtension } = require('../index.js');

@@ -1,6 +1,5 @@
-/**
- * @author Gary Simken <https://github.com/Gsimken>
- */
+// SPDX-FileCopyrightText: 2026 Evan McKeown
+// SPDX-License-Identifier: Apache-2.0
 
 const { Extension, Platforms } = require('deckboard-kit');
 const fetch = require('node-fetch');

@@ -44,3 +44,7 @@ The previous remote-control server flow (`/query` + password code) is no longer 
 # Contribute
 
 If you want to contribute, open a pull request and it will be reviewed when possible.
+
+
+This project was forked from and losely based on https://github.com/purplestars365/YTMD-deckboard
+
