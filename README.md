@@ -22,7 +22,7 @@ A Deckboard extension for controlling YouTube Music Desktop through the current 
 
 ##### Requirements
 
-* [Node.js® & npm](https://nodejs.org/en/)
+* [Node.js® & npm](https://nodejs.org/)
 
 ## Configure
 
