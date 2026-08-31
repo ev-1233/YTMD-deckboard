@@ -6,7 +6,7 @@ const {
 	Extension,
 	log,
 	INPUT_METHOD,
-	PLATFORMS,
+	Platforms,
 	
 } = require('deckboard-kit');
 const fetch = require('node-fetch');
@@ -18,7 +18,7 @@ class YoutubeMusicDesktopExtension extends Extension {
 		this.dialog=props.dialog;
 		this.setValue=props.setValue;
 		this.name = 'Youtube Music Desktop App';
-		this.platforms = [PLATFORMS.windows, PLATFORMS.mac, PLATFORMS.linux];
+		this.platforms = [Platforms.windows, Platforms.mac, Platforms.linux];
 		this.code = ""
 		this.url = "http://localhost:9863"
 		this.inputs = [
