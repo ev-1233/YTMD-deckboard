@@ -1,54 +1,46 @@
 # YTMD-deckboard
-A plugin to use in deckboard to control Youtube Music Desktop via Remote Control Server
 
-## Setup
+A Deckboard extension for controlling YouTube Music Desktop through the current local API instead of the old remote-control server.
 
 ### Requirements
 
-* Install [Deckboard](https://deckboard.app/) 
-* Install [YTMDesktop](https://ytmdesktop.app) 
+* Install [Deckboard](https://deckboard.app/)
+* Install [YouTube Music Desktop](https://ytmdesktop.app/)
 
-### Installing
+## Installing
 
 #### Download prebuilt version
-* Download the released [YTMD-deckboard.asar](https://github.com/Gsimken/YTMD-deckboard/releases) file
-* Save it to your `{USERNAME}\deckboard\extensions` folder
-   * e.g. `C:\Users\demo\deckboard\extensions`
+
+* Download the released [YTMD-deckboard.asar](https://github.com/Gsimken/YTMD-deckboard/releases) file.
+* Save it to your `{USERNAME}\deckboard\extensions` folder.
 
 #### Compile from source
 
-* Clone the repository to your pc
-* cd into your cloned repository folder
-* Run `npm install` command
-* Run `npm run install` command
-  * This will build the `.asar` file and place it in your extensions folder
+* Clone the repository.
+* Run `npm install`.
+* Run `npm run install` to build the extension package.
 
 ##### Requirements
+
 * [Node.js® & npm](https://nodejs.org/en/)
-  
+
 ## Configure
 
-### Youtube Music Desktop
-* Go to Settings
-
-![Youtube music desktop settings](assets/YTMD.png)
-* Then Turn on Remote Control and Protect
-
-![Youtube music desktop setting integrations](assets/YTMD_CONFIGS.png)
 ### Deckboard
 
-* Click in Config(Cog) >  Extensions > Configs;
-* In remote control pasword put the Code of the settings  in this case "K67SB"
-* In URL use your server url, default: 
-http://localhost:9863
+1. Open Config (Cog) > Extensions > Configs.
+2. Set Local API URL to `http://127.0.0.1:13091`.
+3. Open YTMD Settings.
+4. Go to API & Integrations.
+5. Enable the API under API.
+6. Turn on Require authorization under Authentication.
+7. Create a client and copy the token
+8. Paste that token in to the Deckboard extension configuration
 
-![Deckboard Settings](assets/DECKBOARD_SETTINGS.png)
+Notes
 
-# Contribute 
+The previous remote-control server flow (`/query` + password code) is no longer compatible with current YTMD builds. This extension uses the new token-based local API instead.
 
-If you want to make pull request, I will review them as soon as possible.
+# Contribute
 
-
-Donations to this project can be made through  BuyMeACoffee 
-
-<a href='https://ko-fi.com/gsimken' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
+If you want to contribute, open a pull request and it will be reviewed when possible.
