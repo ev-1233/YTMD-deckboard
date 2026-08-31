@@ -4,23 +4,81 @@
 
 const {
 	Extension,
-	log,
-	INPUT_METHOD,
 	Platforms,
-	
 } = require('deckboard-kit');
 const fetch = require('node-fetch');
 
+const logger = typeof require('deckboard-kit').log === 'function'
+	? require('deckboard-kit').log
+	: (...args) => console.error(...args);
 
 class YoutubeMusicDesktopExtension extends Extension {
+	static ACTIONS = {
+		'track-play-pause': {
+			method: 'POST',
+			path: '/track/toggle-play-state',
+		},
+		'track-next': {
+			method: 'POST',
+			path: '/track/next',
+		},
+		'track-previous': {
+			method: 'POST',
+			path: '/track/prev',
+		},
+		'player-volume-up': {
+			method: 'POST',
+			path: '/track/volume-up',
+			body: { amount: 5 },
+		},
+		'player-volume-down': {
+			method: 'POST',
+			path: '/track/volume-down',
+			body: { amount: 5 },
+		},
+	};
+
+	static normalizeBaseUrl(urlValue) {
+		const rawUrl = typeof urlValue === 'string' ? urlValue.trim() : '';
+		if (!rawUrl) return 'http://127.0.0.1:13091';
+		return rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
+	}
+
+	static buildActionRequest(action, config = {}) {
+		const route = YoutubeMusicDesktopExtension.ACTIONS[action];
+		if (!route) return null;
+
+		const baseUrl = YoutubeMusicDesktopExtension.normalizeBaseUrl(config.url);
+		const token = (config.token || '').trim();
+		const headers = {
+			'Content-Type': 'application/json',
+		};
+
+		if (token) {
+			headers.Authorization = `Bearer ${token}`;
+		}
+
+		return {
+			method: route.method,
+			url: `${baseUrl}${route.path}`,
+			headers,
+			body: route.body ? JSON.stringify(route.body) : undefined,
+		};
+	}
+
+	static getActionRequest(action, config = {}) {
+		return YoutubeMusicDesktopExtension.buildActionRequest(action, config);
+	}
+
 	constructor(props) {
 		super(props);
-		this.dialog=props.dialog;
-		this.setValue=props.setValue;
+		this.dialog = props.dialog;
+		this.setValue = props.setValue;
 		this.name = 'Youtube Music Desktop App';
 		this.platforms = [Platforms.windows, Platforms.mac, Platforms.linux];
-		this.code = ""
-		this.url = "http://localhost:9863"
+		this.code = '';
+		this.url = 'http://127.0.0.1:13091';
+		this.token = '';
 		this.inputs = [
 			{
 				label: 'Track Play/Pause',
@@ -54,78 +112,73 @@ class YoutubeMusicDesktopExtension extends Extension {
 			},
 		];
 		this.configs = {
-			urlRemoteControl: {
-				type: "text",
-				name: "Remote control url:",
-				description: "Put the URL from remote server [Default: http://localhost:9863 ]",
-				value:  "http://localhost:9863"
-
+			apiUrl: {
+				type: 'text',
+				name: 'Local API URL:',
+				description: 'YTMD local API base URL [Default: http://127.0.0.1:13091]',
+				value: 'http://127.0.0.1:13091',
 			},
-			codeRemoteControl: {
-				type: "text",
-				name: "Remote control password: ",
-				description: "Put code of Remote control server here [Settings->Integration->Remote control(ON)->Protect remote control with paswword (on)]",
-				value: ""
-			}
+			apiToken: {
+				type: 'text',
+				name: 'Authorization token:',
+				description: 'Paste the Bearer token from YTMD authentication or /auth/request',
+				value: '',
+			},
 		};
 		this.initExtension();
 	}
 
-	initExtension(){
-		this.code= this.configs.codeRemoteControl.value
-		this.url = this.configs.urlRemoteControl.value
+	initExtension() {
+		this.url = YoutubeMusicDesktopExtension.normalizeBaseUrl(
+			this.configs && this.configs.apiUrl ? this.configs.apiUrl.value : this.url
+		);
+		this.token = this.configs && this.configs.apiToken ? this.configs.apiToken.value : this.token;
+		this.code = this.token;
 	}
-	// make a post query to server ytmd
-	async postQuery(command){
-		
-		let value=true //maybe in a future can be upgrade to new actions 
-		let apiUrl = this.url
-		let code= this.code
-		if (apiUrl===null || apiUrl===""){apiUrl = "http://localhost:9863"}
-		const url= `${apiUrl}/query`;
-		const data=JSON.stringify({
-			command,
-			value,
-			});
-		try{
-			
-			const response =  await fetch(url, {
-				method: 'post',
-				headers: {
-				"Content-Type": "text/plain",
-				Authorization: `Code ${code}`,
-				},
-				body: data
-			});
-			
 
-		}catch(error){
-			log(error)
+	async postQuery(command) {
+		const request = YoutubeMusicDesktopExtension.buildActionRequest(command, {
+			url: this.url,
+			token: this.token,
+		});
+
+		if (!request) {
+			return null;
 		}
-		
+
+		try {
+			const response = await fetch(request.url, {
+				method: request.method,
+				headers: request.headers,
+				body: request.body,
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				logger(`YTMD API error (${request.url}): ${response.status} ${errorText}`);
+			}
+
+			return response;
+		} catch (error) {
+			logger(error);
+			return null;
+		}
 	}
-	// Executes when the extensions loaded every time the app start.
+
 	execute(action, args) {
 		switch (action) {
 			case 'track-play-pause':
-				this.postQuery(action)
-				break;
 			case 'track-next':
-				this.postQuery(action)
-				break;
 			case 'track-previous':
-				this.postQuery(action)
-				break;
 			case 'player-volume-up':
-				 this.postQuery(action)
-				break;
 			case 'player-volume-down':
-				 this.postQuery(action)
+				this.postQuery(action);
 				break;
 			default:
 				break;
 		}
-	};
+	}
 }
 
 module.exports = sendData => new YoutubeMusicDesktopExtension(sendData);
+module.exports.YoutubeMusicDesktopExtension = YoutubeMusicDesktopExtension;
