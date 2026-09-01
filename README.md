@@ -1,28 +1,28 @@
-# YTMD-deckboard
+# YTMD2-deckboard
 
 A Deckboard extension for controlling YouTube Music Desktop through the current local API instead of the old remote-control server.
 
-### Requirements
+## Requirements
 
-* Install [Deckboard](https://deckboard.app/)
-* Install [YouTube Music Desktop](https://ytmdesktop.app/)
+- Install [Deckboard](https://deckboard.app/)
+- Install [YouTube Music Desktop](https://ytmdesktop.app/)
 
 ## Installing
 
-#### Download prebuilt version
+### Download prebuilt version
 
-* Download the released [YTMD-deckboard.asar](https://github.com/Gsimken/YTMD-deckboard/releases) file.
-* Save it to your `{USERNAME}\deckboard\extensions` folder.
+- Download the released [YTMD-deckboard.asar](https://github.com/Gsimken/YTMD-deckboard/releases) file.
+- Save it to your `{USERNAME}\deckboard\extensions` folder.
 
-#### Compile from source
+### Compile from source
 
-* Clone the repository.
-* Run `npm install`.
-* Run `npm run install` to build the extension package.
+- Clone the repository.
+- Run `npm install`.
+- Run `npm run install` to build the extension package.
 
-##### Requirements
+#### Requirements
 
-* [Node.js® & npm](https://nodejs.org/)
+- [Node.js® & npm](https://nodejs.org/)
 
 ## Configure
 
@@ -41,10 +41,8 @@ Notes
 
 The previous remote-control server flow (`/query` + password code) is no longer compatible with current YTMD builds. This extension uses the new token-based local API instead.
 
-# Contribute
+## Contribute
 
 If you want to contribute, open a pull request and it will be reviewed when possible.
 
-
 This project was forked from and losely based on https://github.com/purplestars365/YTMD-deckboard
-

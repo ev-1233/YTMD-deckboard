@@ -1,16 +1,32 @@
 {
-    "name": "ytmd-deckboard",
-    "version": "1.0.0",
-    "description": "An extension to interact with Youtube Music Desktop App through a remote control server provided by YTMD",
-    "main": "index.js",
-    "scripts": {
-        "build": "deckboard-kit --build",
-        "install": "deckboard-kit --install"
-    },
-    "author": "GSimken",
-    "license": "MIT",
-    "dependencies": {
-        "deckboard-kit": "https://github.com/rivafarabi/deckboard-kit.git",
-        "node-fetch": "^2.6.1"
-    }
+  "name": "ytmd-deckboard",
+  "version": "1.0.0",
+  "description": "An extension to interact with Youtube Music Desktop App through a remote control server provided by YTMD",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "build": "deckboard-kit --build",
+    "install": "deckboard-kit --install"
+  },
+  "author": "GSimken",
+  "license": "MIT",
+  "dependencies": {
+    "deckboard-kit": "https://github.com/rivafarabi/deckboard-kit.git",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@eslint/json": "^2.0.1",
+    "@eslint/markdown": "^8.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.69.0",
+    "@typescript-eslint/parser": "^8.69.0",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3"
+  }
 }

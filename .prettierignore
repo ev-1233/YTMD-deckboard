@@ -1,0 +1,4 @@
+node_modules/
+dist/
+*.asar
+package-lock.json
