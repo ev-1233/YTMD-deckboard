@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Evan McKeown
 // SPDX-License-Identifier: Apache-2.0
 
-const { Extension, Platforms } = require('deckboard-kit');
+const deckboardKit = require('deckboard-kit');
+const { Extension, Platforms = { windows: 'windows', mac: 'mac', linux: 'linux' } } = deckboardKit;
 const fetch = require('node-fetch');
 const runtimeFetch = (...args) => (globalThis.fetch || fetch)(...args);
 
@@ -11,8 +12,11 @@ const logger =
     : (...args) => console.error(...args);
 
 const debugLog = (...args) => console.log('[YTMD DEBUG]', ...args);
+const DEFAULT_ICON_COLOR = '#FF0000';
 
 class YoutubeMusicDesktopExtension extends Extension {
+  // Deckboard exposes actions by name. Each entry maps a button/action to the
+  // YTMD HTTP route that should be called when that control is triggered.
   static ACTIONS = {
     'track-status': {
       method: 'POST',
@@ -81,22 +85,28 @@ class YoutubeMusicDesktopExtension extends Extension {
     },
   };
 
+  // Normalizes the configured YTMD address so the extension can talk to the local
+  // API consistently even if the user enters a trailing slash.
   static normalizeBaseUrl(urlValue) {
     const rawUrl = typeof urlValue === 'string' ? urlValue.trim() : '';
     if (!rawUrl) return 'http://127.0.0.1:13091';
     return rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
   }
 
+  // Redacts auth values before logging requests so tokens are not exposed in debug output.
   static sanitizeHeaders(headers = {}) {
     const safeHeaders = { ...headers };
     if (safeHeaders.Authorization) safeHeaders.Authorization = '[REDACTED]';
     return safeHeaders;
   }
 
+  // Masks token values in URLs before they are written to debug logs.
   static sanitizeUrl(url = '') {
     return url.replace(/([?&]token=)[^&]+/i, '$1[REDACTED]');
   }
 
+  // Builds the final HTTP request for an action using the configured API base URL,
+  // auth token, and any body parameters required by the YTMD route.
   static buildActionRequest(action, config = {}) {
     const route = YoutubeMusicDesktopExtension.ACTIONS[action];
     if (!route) return null;
@@ -118,10 +128,13 @@ class YoutubeMusicDesktopExtension extends Extension {
     };
   }
 
+  // Public helper that returns the request payload for a given action.
   static getActionRequest(action, config = {}) {
     return YoutubeMusicDesktopExtension.buildActionRequest(action, config);
   }
 
+  // The extension instance owns the Deckboard configuration, the API connection info,
+  // and the polling loop used to refresh the current playback state.
   constructor(props) {
     super(props);
     this.dialog = props.dialog;
@@ -137,86 +150,86 @@ class YoutubeMusicDesktopExtension extends Extension {
         value: 'track-status',
         icon: 'play-circle',
         mode: 'custom-value',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track play',
         value: 'track-play',
         icon: 'play',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track pause',
         value: 'track-pause',
         icon: 'pause',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track repeat',
         value: 'track-repeat',
         icon: 'repeat',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track shuffle',
         value: 'track-shuffle',
         icon: 'random',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Forward 10s',
         value: 'track-forward',
         icon: 'forward',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Back 10s',
         value: 'track-backward',
         icon: 'backward',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track Play/Pause',
         value: 'track-play-pause',
         icon: 'toggle-on',
         mode: 'custom-value',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track next',
         value: 'track-next',
         icon: 'step-forward',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Track previous',
         value: 'track-previous',
         icon: 'step-backward',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Home',
         value: 'nav-home',
         icon: 'home',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Clear queue',
         value: 'nav-queue-clear',
         icon: 'trash',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Volume up',
         value: 'player-volume-up',
         icon: 'volume-up',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
       {
         label: 'Volume down',
         value: 'player-volume-down',
         icon: 'volume-down',
-        color: '#FF0000',
+        color: DEFAULT_ICON_COLOR,
       },
     ];
     this.configs = {
@@ -234,9 +247,64 @@ class YoutubeMusicDesktopExtension extends Extension {
       },
     };
     this._stateTimer = null;
+    this._lastPlaybackStatus = null;
+    this._fetchLogState = {
+      playback: { connected: null, lastErrorKey: null },
+    };
     this.initExtension();
   }
 
+  // Produces a stable fingerprint for fetch errors so repeated failures can be suppressed.
+  static buildErrorKey(error) {
+    if (!error) return 'unknown-error';
+    if (typeof error === 'string') return error;
+
+    const parts = [error.name, error.message];
+    const cause = error && typeof error === 'object' ? error.cause : null;
+    if (cause && typeof cause === 'object') {
+      if (cause.code) parts.push(`cause-code:${cause.code}`);
+      if (cause.errno !== undefined) parts.push(`cause-errno:${cause.errno}`);
+      if (cause.syscall) parts.push(`cause-syscall:${cause.syscall}`);
+      if (cause.address) parts.push(`cause-address:${cause.address}`);
+      if (cause.port !== undefined) parts.push(`cause-port:${cause.port}`);
+      if (cause.message) parts.push(`cause-message:${cause.message}`);
+    }
+
+    return parts.filter(Boolean).join('|');
+  }
+
+  // Logs an endpoint failure only when the error changes or when transitioning from connected -> failed.
+  logFetchIssue(endpointKey, error) {
+    const state = this._fetchLogState[endpointKey];
+    if (!state) {
+      logger(error);
+      return;
+    }
+
+    const errorKey = YoutubeMusicDesktopExtension.buildErrorKey(error);
+    const shouldLog = state.connected !== false || state.lastErrorKey !== errorKey;
+
+    if (shouldLog) logger(error);
+
+    state.connected = false;
+    state.lastErrorKey = errorKey;
+  }
+
+  // Emits a single reconnection message when an endpoint starts working again.
+  markFetchConnected(endpointKey, label) {
+    const state = this._fetchLogState[endpointKey];
+    if (!state) return;
+
+    if (state.connected === false) {
+      debugLog(`${label} connected`);
+    }
+
+    state.connected = true;
+    state.lastErrorKey = null;
+  }
+
+  // Initializes the extension settings and starts polling the YTMD API so the
+  // Deckboard state can reflect the current “playing/paused” status.
   initExtension() {
     this.url = YoutubeMusicDesktopExtension.normalizeBaseUrl(
       this.configs && this.configs.apiUrl ? this.configs.apiUrl.value : this.url
@@ -254,6 +322,8 @@ class YoutubeMusicDesktopExtension extends Extension {
     }
   }
 
+  // Fetches the current playback state from YTMD so Deckboard can show whether
+  // the track is playing, paused, or in an unknown state.
   async getPlaybackState() {
     const request = {
       method: 'GET',
@@ -269,15 +339,34 @@ class YoutubeMusicDesktopExtension extends Extension {
         headers: request.headers,
       });
 
-      if (!response.ok) return null;
+      if (!response.ok) {
+        this.logFetchIssue(
+          'playback',
+          new Error(`Playback state request failed: HTTP ${response.status}`)
+        );
+        return null;
+      }
+
       const payload = await response.json();
-      return payload && typeof payload === 'object' ? payload : null;
+
+      if (!(payload && typeof payload === 'object')) {
+        this.logFetchIssue(
+          'playback',
+          new Error('Playback state request returned invalid JSON payload')
+        );
+        return null;
+      }
+
+      this.markFetchConnected('playback', 'Playback state');
+      return payload;
     } catch (error) {
-      logger(error);
+      this.logFetchIssue('playback', error);
       return null;
     }
   }
 
+  // Retrieves metadata about the currently loaded track, useful for diagnostics and
+  // debugging when the API is failing or returning unexpected data.
   async getCurrentTrack() {
     const request = {
       method: 'GET',
@@ -302,6 +391,8 @@ class YoutubeMusicDesktopExtension extends Extension {
     }
   }
 
+  // Calls the root YTMD endpoint to discover the API name, enabled routes, and
+  // whether authentication is required.
   async getApiInfo() {
     try {
       const response = await runtimeFetch(`${this.url}/`, { method: 'GET' });
@@ -314,6 +405,8 @@ class YoutubeMusicDesktopExtension extends Extension {
     }
   }
 
+  // Collects a small bundle of API state for debugging when a command fails, so the
+  // developer can tell which route or auth issue is blocking the action.
   async logFailureDiagnostics(command) {
     const [apiInfo, track, state] = await Promise.all([
       this.getApiInfo(),
@@ -346,14 +439,22 @@ class YoutubeMusicDesktopExtension extends Extension {
     });
   }
 
+  // Updates the Deckboard control values so status buttons reflect whether YTMD is
+  // currently playing or paused.
   async refreshPlaybackState() {
     const state = await this.getPlaybackState();
+
     const status =
       state && typeof state.playing === 'boolean'
         ? state.playing
           ? 'Playing'
           : 'Paused'
         : 'Unknown';
+
+    if (status !== this._lastPlaybackStatus) {
+      debugLog('Playback status changed', { status });
+      this._lastPlaybackStatus = status;
+    }
 
     if (typeof this.setValue === 'function') {
       this.setValue({
@@ -363,6 +464,8 @@ class YoutubeMusicDesktopExtension extends Extension {
     }
   }
 
+  // Sends a specific YTMD command to the local API, retries if needed, and refreshes
+  // playback state when the action affects the player state.
   async postQuery(command) {
     const request = YoutubeMusicDesktopExtension.buildActionRequest(command, {
       url: this.url,
@@ -436,6 +539,8 @@ class YoutubeMusicDesktopExtension extends Extension {
     }
   }
 
+  // Tries alternate auth patterns when the server rejects the standard bearer token
+  // format, such as sending the token in the raw header or as a query parameter.
   async tryAuthFallback(request, command) {
     if (!this.token) return null;
 
@@ -493,6 +598,9 @@ class YoutubeMusicDesktopExtension extends Extension {
     return queryTokenResponse;
   }
 
+  // Fallbacks for routes whose command names differ slightly from the actual API.
+  // This keeps actions such as Home and seek controls working even when the backend
+  // expects a different endpoint or payload shape.
   async tryCommandFallback(command) {
     if (command === 'nav-home') {
       const fallback = YoutubeMusicDesktopExtension.buildActionRequest('nav-open-home', {
@@ -561,6 +669,8 @@ class YoutubeMusicDesktopExtension extends Extension {
     return null;
   }
 
+  // Deckboard calls this method whenever a button is pressed. It routes the action to
+  // the correct YTMD command while ignoring unsupported names.
   execute(action, args) {
     debugLog('Execute action', { action, args: args || null });
     switch (action) {

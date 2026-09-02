@@ -5,7 +5,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { YoutubeMusicDesktopExtension } = require('../index.js');
 
+// This test verifies that each Deckboard button name is translated into the correct
+// YTMD HTTP route, with the expected auth header and JSON payload when needed.
 test('buildActionRequest maps Deckboard actions to local API routes', () => {
+  // Each request object is built from a Deckboard action and a local API config.
   const toggleRequest = YoutubeMusicDesktopExtension.getActionRequest('track-play-pause', {
     url: 'http://127.0.0.1:13091',
     token: 'test-token',
@@ -58,6 +61,8 @@ test('buildActionRequest maps Deckboard actions to local API routes', () => {
     token: 'test-token',
   });
 
+  // These assertions confirm that the generated requests match the exact endpoint and
+  // payload contract the YTMD API expects.
   assert.deepEqual(toggleRequest, {
     method: 'POST',
     url: 'http://127.0.0.1:13091/track/toggle-play-state',
@@ -151,6 +156,8 @@ test('buildActionRequest maps Deckboard actions to local API routes', () => {
   });
 });
 
+// This test ensures the extension converts the raw YTMD playback payload into the
+// friendly status strings used by Deckboard buttons like “Playing” and “Paused”.
 test('refreshPlaybackState writes a readable live status for the status button and toggles', async () => {
   let fetchCalls = 0;
   const fetchStub = async () => {
@@ -168,6 +175,8 @@ test('refreshPlaybackState writes a readable live status for the status button a
 
   let ext;
   try {
+    // The instance stores the latest state via setValue, which mimics Deckboard's
+    // data flow for UI updates.
     ext = new YoutubeMusicDesktopExtension({
       dialog: null,
       setValue: (state) => {
@@ -176,6 +185,7 @@ test('refreshPlaybackState writes a readable live status for the status button a
     });
 
     await ext.refreshPlaybackState();
+    // The refresh call triggers a playback-state fetch and then writes the derived UI state.
     assert.equal(fetchCalls, 2);
     assert.deepEqual(ext.lastState, {
       'track-play-pause': 'Playing',
@@ -186,6 +196,8 @@ test('refreshPlaybackState writes a readable live status for the status button a
   }
 });
 
+// This test checks that the main command sender issues the expected play/pause HTTP
+// requests and does not silently drop those actions.
 test('postQuery sends play and pause requests directly', async () => {
   const original = globalThis.fetch;
   const calledUrls = [];

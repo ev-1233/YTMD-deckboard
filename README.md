@@ -5,7 +5,7 @@ A Deckboard extension for controlling YouTube Music Desktop through the current 
 ## Requirements
 
 - Install [Deckboard](https://deckboard.app/)
-- Install [YouTube Music Desktop](https://ytmdesktop.app/)
+- Install [YouTube Music Desktop 2](https://youtube-music.app)
 
 ## Installing
 
@@ -36,8 +36,7 @@ A Deckboard extension for controlling YouTube Music Desktop through the current 
 6. Turn on Require authorization under Authentication.
 7. Create a client and copy the token
 8. Paste that token in to the Deckboard extension configuration
-
-Notes
+   Notes
 
 The previous remote-control server flow (`/query` + password code) is no longer compatible with current YTMD builds. This extension uses the new token-based local API instead.
 
