@@ -52,6 +52,16 @@ class YoutubeMusicDesktopExtension extends Extension {
       path: '/track/backward',
       body: (config = {}) => ({ time: Number(config.time) || 10 }),
     },
+    'track-like': {
+      method: 'POST',
+      path: '/track/like',
+      body: true,
+    },
+    'track-dislike': {
+      method: 'POST',
+      path: '/track/dislike',
+      body: false,
+    },
     'track-next': {
       method: 'POST',
       path: '/track/next',
@@ -193,6 +203,18 @@ class YoutubeMusicDesktopExtension extends Extension {
         value: 'track-play-pause',
         icon: 'toggle-on',
         mode: 'custom-value',
+        color: DEFAULT_ICON_COLOR,
+      },
+      {
+        label: 'Track like',
+        value: 'track-like',
+        icon: 'thumbs-up',
+        color: DEFAULT_ICON_COLOR,
+      },
+      {
+        label: 'Track dislike',
+        value: 'track-dislike',
+        icon: 'thumbs-down',
         color: DEFAULT_ICON_COLOR,
       },
       {
@@ -426,6 +448,8 @@ class YoutubeMusicDesktopExtension extends Extension {
       hasPlayRoute: hasRoute('api/track/play'),
       hasPauseRoute: hasRoute('api/track/pause'),
       hasToggleRoute: hasRoute('api/track/toggle-play-state'),
+      hasLikeRoute: hasRoute('api/track/like'),
+      hasDislikeRoute: hasRoute('api/track/dislike'),
       hasNextRoute: hasRoute('api/track/next'),
       hasPrevRoute: hasRoute('api/track/prev'),
       hasVolumeUpRoute: hasRoute('api/track/volume-up'),
@@ -528,6 +552,8 @@ class YoutubeMusicDesktopExtension extends Extension {
           'track-shuffle',
           'track-forward',
           'track-backward',
+          'track-like',
+          'track-dislike',
         ].includes(command)
       ) {
         this.refreshPlaybackState();
@@ -681,6 +707,8 @@ class YoutubeMusicDesktopExtension extends Extension {
       case 'track-shuffle':
       case 'track-forward':
       case 'track-backward':
+      case 'track-like':
+      case 'track-dislike':
       case 'track-play-pause':
       case 'track-next':
       case 'track-previous':

@@ -1,7 +1,7 @@
 {
-  "name": "ytmd-deckboard",
-  "version": "1.0.0",
-  "description": "An extension to interact with Youtube Music Desktop App through a remote control server provided by YTMD",
+  "name": "ytmd2-deckboard",
+  "version": "2.0.1",
+  "description": "An extension to interact with Youtube Music Desktop App through the ytmd2 API.",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
@@ -13,16 +13,17 @@
     "build": "deckboard-kit --build",
     "postinstall": "npm install deckboard-kit-cli --no-save && npx deckboard-kit --install"
   },
-  "author": "GSimken",
-  "license": "MIT",
+  "author": "Ev",
+  "license": "Apache License 2.0",
+  "repository": "https://github.com/ev-1233/YTMD-deckboard",
   "dependencies": {
     "deckboard-kit": "github:rivafarabi/deckboard-kit",
     "deckboard-kit-cli": "^1.1.3",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@eslint/json": "^2.0.1",
+    "@eslint/json": "^2.1.0",
     "@eslint/markdown": "^8.0.3",
     "@typescript-eslint/eslint-plugin": "^8.69.0",
     "@typescript-eslint/parser": "^8.69.0",
@@ -30,6 +31,6 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.11.0",
     "prettier": "^3.9.6",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   }
 }

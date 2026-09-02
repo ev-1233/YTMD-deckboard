@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Evan McKeown
 # SPDX-License-Identifier: Apache-2.0
 
-name: YTMD
-package: ytmd-deckboard
-version: 1.0.0
-description: YouTube Music Desktop Deckboard Extension
-author: purplestars365
+name: YTMD2-deckboard
+package: YTMD2-deckboard
+version: 2.0.1
+description: An extension to interact with Youtube Music Desktop App through the ytmd2 API.
+author: Ev
+license: Apache License 2.0
+repository: 'https://github.com/ev-1233/YTMD-deckboard'

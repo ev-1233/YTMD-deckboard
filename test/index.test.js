@@ -51,6 +51,16 @@ test('buildActionRequest maps Deckboard actions to local API routes', () => {
     time: 10,
   });
 
+  const likeRequest = YoutubeMusicDesktopExtension.getActionRequest('track-like', {
+    url: 'http://127.0.0.1:13091',
+    token: 'test-token',
+  });
+
+  const dislikeRequest = YoutubeMusicDesktopExtension.getActionRequest('track-dislike', {
+    url: 'http://127.0.0.1:13091',
+    token: 'test-token',
+  });
+
   const homeRequest = YoutubeMusicDesktopExtension.getActionRequest('nav-home', {
     url: 'http://127.0.0.1:13091',
     token: 'test-token',
@@ -137,6 +147,26 @@ test('buildActionRequest maps Deckboard actions to local API routes', () => {
     body: JSON.stringify({ time: 10 }),
   });
 
+  assert.deepEqual(likeRequest, {
+    method: 'POST',
+    url: 'http://127.0.0.1:13091/track/like',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer test-token',
+    },
+    body: JSON.stringify(true),
+  });
+
+  assert.deepEqual(dislikeRequest, {
+    method: 'POST',
+    url: 'http://127.0.0.1:13091/track/dislike',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer test-token',
+    },
+    body: JSON.stringify(false),
+  });
+
   assert.deepEqual(homeRequest, {
     method: 'POST',
     url: 'http://127.0.0.1:13091/nav/home',
@@ -196,9 +226,9 @@ test('refreshPlaybackState writes a readable live status for the status button a
   }
 });
 
-// This test checks that the main command sender issues the expected play/pause HTTP
+// This test checks that the main command sender issues the expected track command HTTP
 // requests and does not silently drop those actions.
-test('postQuery sends play and pause requests directly', async () => {
+test('postQuery sends play, pause, like, and dislike requests directly', async () => {
   const original = globalThis.fetch;
   const calledUrls = [];
 
@@ -227,9 +257,13 @@ test('postQuery sends play and pause requests directly', async () => {
     const ext = new YoutubeMusicDesktopExtension({ dialog: null, setValue: () => {} });
     await ext.postQuery('track-play');
     await ext.postQuery('track-pause');
+    await ext.postQuery('track-like');
+    await ext.postQuery('track-dislike');
 
     assert.equal(calledUrls.includes('http://127.0.0.1:13091/track/play'), true);
     assert.equal(calledUrls.includes('http://127.0.0.1:13091/track/pause'), true);
+    assert.equal(calledUrls.includes('http://127.0.0.1:13091/track/like'), true);
+    assert.equal(calledUrls.includes('http://127.0.0.1:13091/track/dislike'), true);
   } finally {
     globalThis.fetch = original;
   }

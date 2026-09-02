@@ -1,6 +1,8 @@
 # YTMD2-deckboard
 
-A Deckboard extension for controlling YouTube Music Desktop through the current local API instead of the old remote-control server.
+A Deckboard extension for controlling YouTube Music Desktop 2 through the current local API instead of the old remote-control server.
+
+See [EXTENSION_GUIDE.md](EXTENSION_GUIDE.md) for the detailed development, configuration, and release guide.
 
 ## Requirements
 
@@ -18,7 +20,8 @@ A Deckboard extension for controlling YouTube Music Desktop through the current 
 
 - Clone the repository.
 - Run `npm install`.
-- Run `npm run install` to build the extension package.
+- Run `npm run build` to package the extension.
+- Run `npm run check` to run the full release-quality check.
 
 #### Requirements
 
